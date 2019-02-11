@@ -97,4 +97,42 @@ defmodule ExAws.S3.ParserTest do
     assert "abcd" == key
     assert "bUCMhxUCGCA0GiTAhTj6cq2rChItfIMYBgO7To9yiuUyDk4CWqhtHPx8cGkgjzyavE2aW6HvhQgu9pvDB3.oX73RC7N3zM9dSU3mecTndVRHQLJCAsySsT6lXRd2Id2a" == upload_id
   end
+
+  test "#parse_upload_part_copy parses response" do
+    parse_upload_part_copy_response = """
+    <CopyPartResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+      <LastModified>2019-02-09T06:27:26.000Z</LastModified>
+      <ETag>&quot;7cbef1ad67ecd0d9ba35af98d3de5a94&quot;</ETag>
+    </CopyPartResult>
+    """
+
+    result = ExAws.S3.Parsers.parse_upload_part_copy({:ok, %{body: parse_upload_part_copy_response}})
+    {:ok, %{body: %{last_modified: last_modified, etag: etag}}} = result
+
+    assert "2019-02-09T06:27:26.000Z" == last_modified
+    assert "\"7cbef1ad67ecd0d9ba35af98d3de5a94\"" == etag
+  end
+
+  test "#parse_complete_multipart_upload parses response" do
+    complete_multipart_upload_response = """
+    <CompleteMultipartUpload>
+      <Part>
+        <PartNumber>1</PartNumber>
+        <ETag>59f1baafb679d52db90c1b1d58166317</ETag>
+      </Part>
+      <Part>
+        <PartNumber>2</PartNumber>
+        <ETag>4b24ec8e419007219f97696742464307</ETag>
+      </Part>
+    </CompleteMultipartUpload>
+    """
+
+    result = ExAws.S3.Parsers.parse_complete_multipart_upload({:ok, %{body: complete_multipart_upload_response}})
+    {:ok, %{body: %{parts: parts}}} = result
+
+    assert parts == [
+             %{part_number: 1, etag: "59f1baafb679d52db90c1b1d58166317"},
+             %{part_number: 2, etag: "4b24ec8e419007219f97696742464307"}
+           ]
+  end
 end
