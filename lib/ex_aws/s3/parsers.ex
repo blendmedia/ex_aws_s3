@@ -2,6 +2,8 @@ if Code.ensure_loaded?(SweetXml) do
   defmodule ExAws.S3.Parsers do
     import SweetXml, only: [sigil_x: 2]
 
+    require Logger
+
     def parse_upload({:ok, resp = %{body: xml}}) do
       parsed_body = xml
       |> SweetXml.xpath(~x"//CompleteMultipartUploadResult",
@@ -89,12 +91,12 @@ if Code.ensure_loaded?(SweetXml) do
 
     def parse_complete_multipart_upload({:ok, resp = %{body: xml}}) do
       parsed_body = xml
-      |> SweetXml.xpath(~x"//CompleteMultipartUpload",
-        parts: [~x"./Part"l,
-          part_number: ~x"./PartNumber/text()"i,
-          etag: ~x"./ETag/text()"s,
-        ]
-      )
+                    |> SweetXml.xpath(~x"//CompleteMultipartUpload",
+                         parts: [~x"./Part"l,
+                           part_number: ~x"./PartNumber/text()"i,
+                           etag: ~x"./ETag/text()"s,
+                         ]
+                       )
 
       {:ok, %{resp | body: parsed_body}}
     end

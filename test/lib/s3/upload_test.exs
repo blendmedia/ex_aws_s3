@@ -32,9 +32,17 @@ defmodule ExAws.S3.UploadTest do
       conn = Plug.Conn.fetch_query_params(conn)
       case conn do
         %{method: "POST", request_path: ^request_path, query_params: %{"uploadId" => ^upload_id}} ->
+          body = """
+          <CompleteMultipartUpload>
+            <Part>
+              <PartNumber>1</PartNumber>
+              <ETag>59f1baafb679d52db90c1b1d58166317</ETag>
+            </Part>
+          </CompleteMultipartUpload>
+          """
           send(test_pid, :completed_upload)
           conn
-          |> Plug.Conn.send_resp(200, "")
+          |> Plug.Conn.send_resp(200, body)
 
         %{method: "POST", request_path: ^request_path} ->
           body = """
